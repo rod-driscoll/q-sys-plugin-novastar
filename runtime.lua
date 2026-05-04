@@ -14,6 +14,70 @@ if (Controls) then
 	local VX_SRC, TU_SRC = 0xFE, 0xFC
 	local READ, WRITE    = 0x00, 0x01
 
+	local InputLabels = {
+		VX4S    = {"DVI","HDMI","VGA1","VGA2","CVBS1","CVBS2","SDI","DP","",""},
+		VX4S_N  = {"HDMI","DVI","VGA","","","CVBS","DP","SDI","",""},
+		VX6S    = {"HDMI1","HDMI2","SDI1","SDI2","DVI1","DVI2","USB","","",""},
+		VX1000  = {"HDMI1","HDMI2","DVI1","DVI2","SDI","OPT1","OPT2","MOSAIC","",""},
+		PROHD   = {"SDI","DVI","HDMI","DP","VGA","CVBS","","","",""},
+		PROUHDJR= {"DP","HDMI","SDI1","SDI2","","","","","",""},
+		MCTRL4K = {"DVI","HDMI","DP","","","","","","",""},
+		TU      = {},
+	}
+
+	local VX_MODELS = {VX4S=true,VX4S_N=true,VX6S=true,VX1000=true,PROHD=true,PROUHDJR=true,MCTRL4K=true}
+	local TU_CONTROLS = {"INPUT_ANDROID","INPUT_HDMI1","INPUT_HDMI2","INPUT_HDMI3",
+	                      "SCREEN_ON","SCREEN_OFF","STANDBY","WAKE","VOLUME","MUTE"}
+	local VX_CONTROLS = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0",
+	                      "TEST_RED","TEST_GREEN","TEST_BLUE","TEST_WHITE","TEST_HORIZ",
+	                      "TEST_VERT","TEST_DIAG","TEST_GRAY","TEST_AGING",
+	                      "PRESET1","PRESET2","PRESET3","PRESET4","PRESET5",
+	                      "PRESET6","PRESET7","PRESET8","PRESET9","PRESET10",
+	                      "Normal","Freeze","Black"}
+
+	local function applyModelLayout(model)
+		if DebugFunction then print("applyModelLayout() called: " .. tostring(model)) end
+		local isTU = (model == "TU")
+
+		-- Show/hide VX controls
+		for _, name in ipairs(VX_CONTROLS) do
+			if Controls[name] then
+				Controls[name].IsInvisible = isTU
+				Controls[name].IsDisabled  = isTU
+			end
+		end
+
+		-- Show/hide TU controls
+		for _, name in ipairs(TU_CONTROLS) do
+			if Controls[name] then
+				Controls[name].IsInvisible = not isTU
+				Controls[name].IsDisabled  = not isTU
+			end
+		end
+
+		-- Update VX input button legends
+		if not isTU then
+			local labels = InputLabels[model] or {}
+			local names  = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
+			for i, ctrlName in ipairs(names) do
+				local lbl = labels[i]
+				if Controls[ctrlName] then
+					if lbl and lbl ~= "" then
+						Controls[ctrlName].Legend = lbl
+						Controls[ctrlName].IsDisabled  = false
+						Controls[ctrlName].IsInvisible = false
+					else
+						Controls[ctrlName].IsDisabled  = true
+						Controls[ctrlName].IsInvisible = true
+					end
+				end
+			end
+		end
+
+		-- Update Port display
+		Controls["Port"].String = isTU and "5201" or "5200"
+	end
+
 	local function buildPacket(label, src, dst, devType, port, boardLo, boardHi, code, reg, dataLen, data)
 		local bytes = {
 			0x00, label, src, dst, devType, port, boardLo, boardHi,
@@ -232,6 +296,44 @@ if (Controls) then
 		PROUHDJR= makePresets({0x00,0x01,0x51,0x13}),
 	}
 
+	local function rewireVXButtons(model)
+		-- Wire input buttons for the current VX model
+		if VX_MODELS[model] then
+			local inputList = Inputs[model] or {}
+			for k, v in ipairs(inputList) do
+				local ctrlName = (k == 10) and "IN0" or ("IN" .. k)
+				if Controls[ctrlName] and v and #v > 0 then
+					Controls[ctrlName].EventHandler = function() sendPacket(v) end
+				end
+			end
+		end
+		-- Wire preset buttons for the current VX model
+		local presetTable = Presets[model]
+		if presetTable then
+			for k, v in ipairs(presetTable) do
+				if Controls["PRESET" .. k] then
+					Controls["PRESET" .. k].EventHandler = function() sendPacket(v) end
+				end
+			end
+		end
+		-- Wire display mode buttons
+		if Controls["Normal"] then
+			Controls["Normal"].EventHandler = function()
+				if DisplayNormal[model] then sendPacket(DisplayNormal[model]) end
+			end
+		end
+		if Controls["Freeze"] then
+			Controls["Freeze"].EventHandler = function()
+				if DisplayFreeze[model] then sendPacket(DisplayFreeze[model]) end
+			end
+		end
+		if Controls["Black"] then
+			Controls["Black"].EventHandler = function()
+				if DisplayBlack[model] then sendPacket(DisplayBlack[model]) end
+			end
+		end
+	end
+
 	local function sendBrightness(value)
 		if DebugFunction then print("sendBrightness() called: " .. tostring(value)) end
 		sendPacket(makeBrightnessPacket(math.floor(value)))
@@ -276,61 +378,44 @@ if (Controls) then
 		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
 	end
 
-	if Controls["Model"].String ~= '' then
-		for k,v in pairs(Inputs[Controls["Model"].String]) do
-			if (v ~= nil and #v > 1) then
-				Controls['IN'..k].EventHandler = function()
-					sendPacket(v)
-				end
-			else
-				if(k == 10) then
-					Controls['IN0'].IsDisabled = true;
-					Controls['IN0'].IsInvisible = true;
-				else
-					Controls['IN'..k].IsDisabled = true;
-					Controls['IN'..k].IsInvisible = true;
-				end;
-			end;
+	Controls["Model"].EventHandler = function()
+		local model = Controls["Model"].String
+		if DebugFunction then print("Model changed to: " .. tostring(model)) end
+		applyModelLayout(model)
+		NovaStar.socket:Disconnect()
+		local ip = Controls["IPAddress"].String
+		if ip ~= "" then
+			local port = (model == "TU") and 5201 or 5200
+			NovaStar.socket:Connect(ip, port)
 		end
-
-		for k, v in pairs(TestPatterns) do
-			Controls['TEST_' .. k].EventHandler = function()
-				for _, pkt in ipairs(v) do
-					sendPacket(pkt)
-				end
-			end
-		end
-
-		Controls['Normal'].EventHandler = function()
-			sendPacket(DisplayNormal[Controls["Model"].String])
-		end;
-
-		Controls['Freeze'].EventHandler = function()
-			sendPacket(DisplayFreeze[Controls["Model"].String])
-		end;
-
-		Controls['Black'].EventHandler = function()
-			sendPacket(DisplayBlack[Controls["Model"].String])
-		end;
-
-		local presetTable = Presets[Controls["Model"].String]
-		if presetTable ~= nil then
-			for k,v in pairs(presetTable) do
-				Controls['PRESET'..k].EventHandler = function()
-					sendPacket(v)
-				end
-			end
-		end
-
+		rewireVXButtons(model)
 	end
 
+	Controls["IPAddress"].EventHandler = function()
+		local ip = Controls["IPAddress"].String
+		if DebugFunction then print("IPAddress changed to: " .. tostring(ip)) end
+		NovaStar.socket:Disconnect()
+		if ip ~= "" then
+			local port = (Controls["Model"].String == "TU") and 5201 or 5200
+			NovaStar.socket:Connect(ip, port)
+		end
+	end
+
+	for k, v in pairs(TestPatterns) do
+		Controls['TEST_' .. k].EventHandler = function()
+			for _, pkt in ipairs(v) do
+				sendPacket(pkt)
+			end
+		end
+	end
 
 	Controls['Brightness'].EventHandler = function()
 		sendBrightness(Controls['Brightness'].Value)
 	end
 
-	-- Set initial Port display
-	Controls["Port"].String = (Controls["Model"].String == "TU") and "5201" or "5200"
+	-- Apply initial model layout (show/hide correct controls for initial model)
+	applyModelLayout(Controls["Model"].String)
+	rewireVXButtons(Controls["Model"].String)
 
 	-- Connect if IP address is already set
 	if Controls["IPAddress"].String ~= "" then
