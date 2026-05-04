@@ -1,5 +1,5 @@
 -- pages
-local PageNames = {"Setup", "Control"}
+PageNames = {"Setup", "Control"}
 
 function GetPages(props)
     local pages = {}
