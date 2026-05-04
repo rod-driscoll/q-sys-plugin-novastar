@@ -43,6 +43,7 @@ if (Controls) then
 		IP = '',
 		socket = TcpSocket.New(),
 		setStatus = function (value, msg)
+			if DebugFunction then print("setStatus() called: " .. tostring(value) .. " " .. tostring(msg)) end
 			-- 0 = OK
 			-- 1 = Compromised
 			-- 2 = Fault
