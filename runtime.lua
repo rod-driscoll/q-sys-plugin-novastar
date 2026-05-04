@@ -40,7 +40,6 @@ if (Controls) then
 	end
 
 	local NovaStar = {
-		IP = '',
 		socket = TcpSocket.New(),
 		setStatus = function (value, msg)
 			if DebugFunction then print("setStatus() called: " .. tostring(value) .. " " .. tostring(msg)) end
@@ -240,7 +239,7 @@ if (Controls) then
 
 	NovaStar.socket.Connected = function()
 		if DebugFunction then print("Connected() called") end
-		print("TCP Connection Established to NovaStar @ " .. Properties['IP Address'].Value)
+		print("TCP Connection Established to NovaStar @ " .. Controls["IPAddress"].String)
 		sendPacket(ConnectPacket)
 	end
 
@@ -253,7 +252,7 @@ if (Controls) then
 	NovaStar.socket.Data = function()
 		local data = NovaStar.socket:Read(NovaStar.socket.BufferLength)
 		if DebugRx then print("Rx (" .. #data .. "b): " .. hexDump({data:byte(1, #data)})) end
-		NovaStar.setStatus(0, "Connected - " .. Properties['IP Address'].Value)
+		NovaStar.setStatus(0, "Connected - " .. Controls["IPAddress"].String)
 	end
 
 	NovaStar.socket.Closed = function()
@@ -267,18 +266,18 @@ if (Controls) then
 		print("TCP Socket Error: ")
 		print(err)
 		NovaStar.setStatus(2,"Communication error with NovaStar")
-		NovaStar.socket:Connect(NovaStar.IP, 5200);
+		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
 	end
 
 	NovaStar.socket.Timeout = function(sock)
 		if DebugFunction then print("Timeout() called") end
 		print("TCP Socket Timeout" )
 		NovaStar.setStatus(2,"Timeout in connection to NovaStar")
-		NovaStar.socket:Connect(NovaStar.IP, 5200);
+		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
 	end
 
-	if Properties['Model'].Value ~= '' then
-		for k,v in pairs(Inputs[Properties['Model'].Value]) do
+	if Controls["Model"].String ~= '' then
+		for k,v in pairs(Inputs[Controls["Model"].String]) do
 			if (v ~= nil and #v > 1) then
 				Controls['IN'..k].EventHandler = function()
 					sendPacket(v)
@@ -303,18 +302,18 @@ if (Controls) then
 		end
 
 		Controls['Normal'].EventHandler = function()
-			sendPacket(DisplayNormal[Properties['Model'].Value])
+			sendPacket(DisplayNormal[Controls["Model"].String])
 		end;
 
 		Controls['Freeze'].EventHandler = function()
-			sendPacket(DisplayFreeze[Properties['Model'].Value])
+			sendPacket(DisplayFreeze[Controls["Model"].String])
 		end;
 
 		Controls['Black'].EventHandler = function()
-			sendPacket(DisplayBlack[Properties['Model'].Value])
+			sendPacket(DisplayBlack[Controls["Model"].String])
 		end;
 
-		local presetTable = Presets[Properties['Model'].Value]
+		local presetTable = Presets[Controls["Model"].String]
 		if presetTable ~= nil then
 			for k,v in pairs(presetTable) do
 				Controls['PRESET'..k].EventHandler = function()
@@ -330,29 +329,23 @@ if (Controls) then
 		sendBrightness(Controls['Brightness'].Value)
 	end
 
-	if(Properties['IP Address'].Value ~= '') then
-		NovaStar.IP = Properties['IP Address'].Value
-		NovaStar.setStatus(5, 'Connecting to NovaStar');
-		NovaStar.socket:Connect(NovaStar.IP, 5200);
-	else
-		NovaStar.setStatus(3, '\nPlease set IP address.');
-		Controls['IN1'].IsDisabled = true;
-		Controls['IN2'].IsDisabled = true;
-		Controls['IN3'].IsDisabled = true;
-		Controls['IN4'].IsDisabled = true;
-		Controls['IN5'].IsDisabled = true;
-		Controls['IN6'].IsDisabled = true;
-		Controls['IN7'].IsDisabled = true;
-		Controls['IN8'].IsDisabled = true;
-		Controls['IN9'].IsDisabled = true;
-		Controls['IN0'].IsDisabled = true;
-		Controls['Brightness'].IsDisabled = true;
-	end;
+	-- Set initial Port display
+	Controls["Port"].String = (Controls["Model"].String == "TU") and "5201" or "5200"
 
-	if(Properties['Default Brightness'].Value ~= '') then
-		Controls['Brightness'].Value = Properties['Default Brightness'].Value
-		sendBrightness(Properties['Default Brightness'].Value)
-	end;
+	-- Connect if IP address is already set
+	if Controls["IPAddress"].String ~= "" then
+		NovaStar.setStatus(5, "Connecting to NovaStar")
+		local port = (Controls["Model"].String == "TU") and 5201 or 5200
+		NovaStar.socket:Connect(Controls["IPAddress"].String, port)
+	else
+		NovaStar.setStatus(3, "Please set IP address")
+	end
+
+	-- Apply default brightness
+	if Properties["Default Brightness"].Value ~= nil then
+		Controls["Brightness"].Value = Properties["Default Brightness"].Value
+		sendBrightness(Properties["Default Brightness"].Value)
+	end
 
 	SetupDebugPrint()
 
