@@ -298,6 +298,25 @@ if (Controls) then
 		PROUHDJR= makePresets({0x00,0x01,0x51,0x13}),
 	}
 
+	-- TU Android Card Control commands (DevType=0x08, SrcAddr=TU_SRC=0xFC)
+	local TuCmds = {
+		Standby    = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x01,0x00,0x00,0x00},0,nil),
+		Wake       = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x02,0x00,0x00,0x00},0,nil),
+		ScreenOn   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x01}),
+		ScreenOff  = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x00}),
+		SrcHDMI1   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x01}),
+		SrcHDMI2   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x02}),
+		SrcAndroid = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x03}),
+		SrcHDMI3   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x04}),
+		Mute       = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x05,0x00,0x00,0x00},1,{0x15}),
+		Unmute     = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x05,0x00,0x00,0x00},1,{0x05}),
+	}
+	-- TU read commands (Android Card Monitoring, DevType=0x06)
+	local TuRead = {
+		CurrentSource = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x04,0x00,0x00,0x00},1,nil),
+		SystemStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x0D,0x00,0x00,0x00},1,nil),
+	}
+
 	local function rewireVXButtons(model)
 		if not VX_MODELS[model] then return end
 		-- Wire input buttons for the current VX model
@@ -400,6 +419,26 @@ if (Controls) then
 			local port = (Controls["Model"].String == "TU") and 5201 or 5200
 			NovaStar.socket:Connect(ip, port)
 		end
+	end
+
+	-- TU series control event handlers
+	Controls["INPUT_HDMI1"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI1) end
+	Controls["INPUT_HDMI2"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI2) end
+	Controls["INPUT_HDMI3"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI3) end
+	Controls["INPUT_ANDROID"].EventHandler = function() sendPacket(TuCmds.SrcAndroid) end
+	Controls["SCREEN_ON"].EventHandler     = function() sendPacket(TuCmds.ScreenOn) end
+	Controls["SCREEN_OFF"].EventHandler    = function() sendPacket(TuCmds.ScreenOff) end
+	Controls["STANDBY"].EventHandler       = function() sendPacket(TuCmds.Standby) end
+	Controls["WAKE"].EventHandler          = function() sendPacket(TuCmds.Wake) end
+
+	Controls["MUTE"].EventHandler = function()
+		sendPacket(Controls["MUTE"].Boolean and TuCmds.Mute or TuCmds.Unmute)
+	end
+
+	Controls["VOLUME"].EventHandler = function()
+		local vol = math.floor(Controls["VOLUME"].Value) & 0xFF
+		sendPacket(buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,
+		                       {0x06,0x00,0x00,0x00},1,{vol}))
 	end
 
 	for k, v in pairs(TestPatterns) do
