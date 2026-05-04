@@ -320,8 +320,8 @@ if (Controls) then
 	local TuPollTimer = Timer.New()
 	TuPollTimer.EventHandler = function()
 		if Controls["Model"].String == "TU" and NovaStar.socket.IsConnected then
+			pendingRead = "CurrentSource"
 			sendPacket(TuRead.CurrentSource)
-			sendPacket(TuRead.SystemStatus)
 		end
 	end
 
@@ -400,13 +400,15 @@ if (Controls) then
 			local b1, b2 = data:byte(1), data:byte(2)
 			if b1 == 0xAA and b2 == 0x55 then
 				local dataByte = data:byte(19)
-				if pendingRead == "CurrentSource" then
-					Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[dataByte] or ("Unknown("..dataByte..")")
-					pendingRead = "SystemStatus"
-					sendPacket(TuRead.SystemStatus)
-				elseif pendingRead == "SystemStatus" then
-					Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
-					pendingRead = nil
+				if dataByte then
+					if pendingRead == "CurrentSource" then
+						Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[dataByte] or ("Unknown("..dataByte..")")
+						pendingRead = "SystemStatus"
+						sendPacket(TuRead.SystemStatus)
+					elseif pendingRead == "SystemStatus" then
+						Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
+						pendingRead = nil
+					end
 				end
 			end
 		end
@@ -437,6 +439,7 @@ if (Controls) then
 		local model = Controls["Model"].String
 		if DebugFunction then print("Model changed to: " .. tostring(model)) end
 		applyModelLayout(model)
+		TuPollTimer:Stop()
 		NovaStar.socket:Disconnect()
 		local ip = Controls["IPAddress"].String
 		if ip ~= "" then
