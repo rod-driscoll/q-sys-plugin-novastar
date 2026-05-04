@@ -27,6 +27,25 @@ if (Controls) then
 		return s
 	end
 
+	local NovaStar = {
+		IP = '',
+		socket = TcpSocket.New(),
+		setStatus = function (value, msg)
+			-- 0 = OK
+			-- 1 = Compromised
+			-- 2 = Fault
+			-- 3 = Not Present
+			-- 4 = Missing
+			-- 5 = Initializing
+			-- >5 = Fault
+			Controls['Status'].Value = value;
+			Controls['Status'].String = msg;
+		end,
+	}
+	NovaStar.socket.ReadTimeout = 0
+	NovaStar.socket.WriteTimeout = 0
+	NovaStar.socket.ReconnectTimeout = 0
+
 	local function sendPacket(pkt)
 		if NovaStar.socket.IsConnected then
 			local s = ""
@@ -130,6 +149,7 @@ if (Controls) then
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x01,0x00,0x00}), --HDMI2
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x02,0x00,0x00}), --DVI1
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --DVI2
+			-- TODO: verify register values for SDI1/OPT1/OPT2/MOSAIC against VX1000.Control.Protocol.V1.0.pdf
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --SDI1
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --OPT1
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --OPT1
@@ -199,26 +219,7 @@ if (Controls) then
 		PROUHDJR= makePresets({0x00,0x01,0x51,0x13}),
 	}
 
-	local NovaStar = {
-		IP = '',
-		socket = TcpSocket.New(),
-		setStatus = function (value, msg)
-			-- 0 = OK
-			-- 1 = Compromised
-			-- 2 = Fault
-			-- 3 = Not Present
-			-- 4 = Missing
-			-- 5 = Initializing
-			-- >5 = Fault
-			Controls['Status'].Value = value;
-			Controls['Status'].String = msg;
-		end,
-	}
-	NovaStar.socket.ReadTimeout = 0
-	NovaStar.socket.WriteTimeout = 0
-	NovaStar.socket.ReconnectTimeout = 0
-
-	function sendBrightness(value)
+	local function sendBrightness(value)
 		sendPacket(makeBrightnessPacket(math.floor(value)))
 	end
 
@@ -318,7 +319,7 @@ if (Controls) then
 			sendPacket(DisplayBlack[Properties['Model'].Value])
 		end;
 
-		presetTable = Presets[Properties['Model'].Value]
+		local presetTable = Presets[Properties['Model'].Value]
 		if presetTable ~= nil then
 			for k,v in pairs(presetTable) do
 				Controls['PRESET'..k].EventHandler = function()
