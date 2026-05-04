@@ -12,7 +12,7 @@ function GetPrettyName(props)
     return "NovaStar Controller"
 end
 
-local Colors = {
+Colors = {
     White    = {255, 255, 255},
     Black    = {0, 0, 0},
     Red      = {255, 0, 0},
