@@ -1,4 +1,16 @@
 if (Controls) then
+	local DebugTx, DebugRx, DebugFunction = false, false, false
+	local DebugPrint = Properties["Debug Print"].Value
+
+	local function SetupDebugPrint()
+		if     DebugPrint == "Tx/Rx"          then DebugTx,DebugRx = true,true
+		elseif DebugPrint == "Tx"             then DebugTx = true
+		elseif DebugPrint == "Rx"             then DebugRx = true
+		elseif DebugPrint == "Function Calls" then DebugFunction = true
+		elseif DebugPrint == "All"            then DebugTx,DebugRx,DebugFunction = true,true,true
+		end
+	end
+
 	local VX_SRC, TU_SRC = 0xFE, 0xFC
 	local READ, WRITE    = 0x00, 0x01
 
@@ -47,6 +59,7 @@ if (Controls) then
 	NovaStar.socket.ReconnectTimeout = 0
 
 	local function sendPacket(pkt)
+		if DebugTx then print("Tx: " .. hexDump(pkt)) end
 		if NovaStar.socket.IsConnected then
 			local s = ""
 			for _, b in ipairs(pkt) do s = s .. string.pack("B", b) end
@@ -220,6 +233,7 @@ if (Controls) then
 	}
 
 	local function sendBrightness(value)
+		if DebugFunction then print("sendBrightness() called: " .. tostring(value)) end
 		sendPacket(makeBrightnessPacket(math.floor(value)))
 	end
 
@@ -248,28 +262,31 @@ if (Controls) then
 	end
 
 	NovaStar.socket.Connected = function()
+		if DebugFunction then print("Connected() called") end
 		print("TCP Connection Established to NovaStar @ " .. Properties['IP Address'].Value)
 		sendPacket(ConnectPacket)
 	end
 
 	NovaStar.socket.Reconnect = function()
+		if DebugFunction then print("Reconnect() called") end
 		print("TCP Socket Reconnecting?")
 		NovaStar.setStatus(5,"Attempting to reconnect")
 	end
 
-	NovaStar.socket.Data = function ()
-		print("Reading " .. NovaStar.socket.BufferLength .. " Bytes")
-		local data = NovaStar.socket:Read(NovaStar.socket.BufferLength);
-		print(hex_dump(data))
-		NovaStar.setStatus(0,"Connected - " .. Properties['IP Address'].Value)
+	NovaStar.socket.Data = function()
+		local data = NovaStar.socket:Read(NovaStar.socket.BufferLength)
+		if DebugRx then print("Rx (" .. #data .. "b): " .. hexDump({data:byte(1, #data)})) end
+		NovaStar.setStatus(0, "Connected - " .. Properties['IP Address'].Value)
 	end
 
 	NovaStar.socket.Closed = function()
+		if DebugFunction then print("Closed() called") end
 		print("TCP Socket Closed?")
 		NovaStar.setStatus(2,"Connection closed by NovaStar")
 	end
 
 	NovaStar.socket.Error = function(sock, err)
+		if DebugFunction then print("Error() called: " .. tostring(err)) end
 		print("TCP Socket Error: ")
 		print(err)
 		NovaStar.setStatus(2,"Communication error with NovaStar")
@@ -277,6 +294,7 @@ if (Controls) then
 	end
 
 	NovaStar.socket.Timeout = function(sock)
+		if DebugFunction then print("Timeout() called") end
 		print("TCP Socket Timeout" )
 		NovaStar.setStatus(2,"Timeout in connection to NovaStar")
 		NovaStar.socket:Connect(NovaStar.IP, 5200);
@@ -358,5 +376,7 @@ if (Controls) then
 		Controls['Brightness'].Value = Properties['Default Brightness'].Value
 		sendBrightness(Properties['Default Brightness'].Value)
 	end;
+
+	SetupDebugPrint()
 
 end
