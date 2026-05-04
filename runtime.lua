@@ -317,6 +317,19 @@ if (Controls) then
 		SystemStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x0D,0x00,0x00,0x00},1,nil),
 	}
 
+	local TuPollTimer = Timer.New()
+	TuPollTimer.EventHandler = function()
+		if Controls["Model"].String == "TU" and NovaStar.socket.IsConnected then
+			sendPacket(TuRead.CurrentSource)
+			sendPacket(TuRead.SystemStatus)
+		end
+	end
+
+	local TU_SOURCE_NAMES = {[0]="Android",[1]="HDMI1",[2]="HDMI2",[3]="HDMI3"}
+	local TU_STATUS_NAMES = {[0]="Standby",[1]="Normal display"}
+
+	local pendingRead = nil
+
 	local function rewireVXButtons(model)
 		if not VX_MODELS[model] then return end
 		-- Wire input buttons for the current VX model
@@ -361,8 +374,14 @@ if (Controls) then
 
 	NovaStar.socket.Connected = function()
 		if DebugFunction then print("Connected() called") end
-		print("TCP Connection Established to NovaStar @ " .. Controls["IPAddress"].String)
-		sendPacket(ConnectPacket)
+		NovaStar.setStatus(0, "Connected - " .. Controls["IPAddress"].String)
+		if Controls["Model"].String == "TU" then
+			pendingRead = "CurrentSource"
+			sendPacket(TuRead.CurrentSource)
+			TuPollTimer:Start(5)
+		else
+			sendPacket(ConnectPacket)
+		end
 	end
 
 	NovaStar.socket.Reconnect = function()
@@ -375,12 +394,28 @@ if (Controls) then
 		local data = NovaStar.socket:Read(NovaStar.socket.BufferLength)
 		if DebugRx then print("Rx (" .. #data .. "b): " .. hexDump({data:byte(1, #data)})) end
 		NovaStar.setStatus(0, "Connected - " .. Controls["IPAddress"].String)
+
+		-- Parse TU read responses
+		if Controls["Model"].String == "TU" and #data >= 19 then
+			local b1, b2 = data:byte(1), data:byte(2)
+			if b1 == 0xAA and b2 == 0x55 then
+				local dataByte = data:byte(19)
+				if pendingRead == "CurrentSource" then
+					Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[dataByte] or ("Unknown("..dataByte..")")
+					pendingRead = "SystemStatus"
+					sendPacket(TuRead.SystemStatus)
+				elseif pendingRead == "SystemStatus" then
+					Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
+					pendingRead = nil
+				end
+			end
+		end
 	end
 
 	NovaStar.socket.Closed = function()
 		if DebugFunction then print("Closed() called") end
-		print("TCP Socket Closed?")
-		NovaStar.setStatus(2,"Connection closed by NovaStar")
+		TuPollTimer:Stop()
+		NovaStar.setStatus(2, "Connection closed")
 	end
 
 	NovaStar.socket.Error = function(sock, err)
