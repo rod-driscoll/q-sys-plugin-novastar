@@ -75,7 +75,9 @@ if (Controls) then
 		end
 
 		-- Update Port display
-		Controls["Port"].String = isTU and "5201" or "5200"
+		if Controls["Port"] then
+			Controls["Port"].String = isTU and "5201" or "5200"
+		end
 	end
 
 	local function buildPacket(label, src, dst, devType, port, boardLo, boardHi, code, reg, dataLen, data)
@@ -297,14 +299,13 @@ if (Controls) then
 	}
 
 	local function rewireVXButtons(model)
+		if not VX_MODELS[model] then return end
 		-- Wire input buttons for the current VX model
-		if VX_MODELS[model] then
-			local inputList = Inputs[model] or {}
-			for k, v in ipairs(inputList) do
-				local ctrlName = (k == 10) and "IN0" or ("IN" .. k)
-				if Controls[ctrlName] and v and #v > 0 then
-					Controls[ctrlName].EventHandler = function() sendPacket(v) end
-				end
+		local inputList = Inputs[model] or {}
+		for k, v in ipairs(inputList) do
+			local ctrlName = (k == 10) and "IN0" or ("IN" .. k)
+			if Controls[ctrlName] and v and #v > 0 then
+				Controls[ctrlName].EventHandler = function() sendPacket(v) end
 			end
 		end
 		-- Wire preset buttons for the current VX model
