@@ -11,34 +11,32 @@ function GetControlLayout(props)
         -- Connect group box
         table.insert(graphics, {
             Type = "GroupBox", Text = "Connect",
-            Fill = Colors.Black, StrokeColor = Colors.White, StrokeWidth = 1,
+            Fill = Colors.Background, StrokeWidth = 1,
             CornerRadius = 4, HTextAlign = "Left",
             Position = {5, 5}, Size = {W - 10, 115}
         })
-        table.insert(graphics, {Type="Text", Text="IP Address", Position={15,35}, Size={90,16}, FontSize=12, HTextAlign="Right", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="IP Address", Position={15,35}, Size={90,16}, FontSize=12, HTextAlign="Right"})
         controls["IPAddress"] = {
             PrettyName = "Setup~IP Address", Style = "Text",
-            Color = Colors.White, FontColor = Colors.Black,
             Position = {110, 33}, Size = {160, 20}, FontSize = 12
         }
-        table.insert(graphics, {Type="Text", Text="Model", Position={15,62}, Size={90,16}, FontSize=12, HTextAlign="Right", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="Model", Position={15,62}, Size={90,16}, FontSize=12, HTextAlign="Right"})
         controls["Model"] = {
             PrettyName = "Setup~Model", Style = "ComboBox",
-            Color = Colors.White, FontColor = Colors.Black,
             Position = {110, 60}, Size = {160, 20}, FontSize = 12
         }
-        table.insert(graphics, {Type="Text", Text="Port", Position={15,89}, Size={90,16}, FontSize=12, HTextAlign="Right", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="Port", Position={15,89}, Size={90,16}, FontSize=12, HTextAlign="Right"})
         controls["Port"] = {
             PrettyName = "Setup~Port", Style = "Text", IsReadOnly = true,
-            Color = Colors.DarkGrey, FontColor = Colors.White,
+            Color = Colors.DarkGrey,
             Position = {110, 87}, Size = {60, 20}, FontSize = 12
         }
-        table.insert(graphics, {Type="Text", Text="(auto)", Position={175,89}, Size={80,16}, FontSize=10, HTextAlign="Left", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="(auto)", Position={175,89}, Size={80,16}, FontSize=10, HTextAlign="Left"})
 
         -- Status group box
         table.insert(graphics, {
             Type = "GroupBox", Text = "Status",
-            Fill = Colors.Black, StrokeColor = Colors.White, StrokeWidth = 1,
+            Fill = Colors.Background, StrokeColor = Colors.Header, StrokeWidth = 1,
             CornerRadius = 4, HTextAlign = "Left",
             Position = {5, 130}, Size = {W - 10, 140}
         })
@@ -46,20 +44,20 @@ function GetControlLayout(props)
             PrettyName = "Status~Connection Status",
             Position = {15, 155}, Size = {W - 30, 28}, Padding = 4
         }
-        table.insert(graphics, {Type="Text", Text="System Status", Position={15,193}, Size={110,16}, FontSize=12, HTextAlign="Right", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="System Status", Position={15,193}, Size={110,16}, FontSize=12, HTextAlign="Right"})
         controls["SYSTEM_STATUS"] = {
             PrettyName = "Status~System Status", Style = "Text",
             HTextAlign = "Left", IsReadOnly = true,
             Color = {0,0,0,0}, StrokeWidth = 0,
-            FontSize = 13, IsBold = true, FontColor = Colors.White,
+            FontSize = 13, IsBold = true,
             Position = {130, 192}, Size = {W - 145, 16}
         }
-        table.insert(graphics, {Type="Text", Text="Current Source", Position={15,216}, Size={110,16}, FontSize=12, HTextAlign="Right", Color=Colors.White})
+        table.insert(graphics, {Type="Text", Text="Current Source", Position={15,216}, Size={110,16}, FontSize=12, HTextAlign="Right"})
         controls["CURRENT_SOURCE"] = {
             PrettyName = "Status~Current Source", Style = "Text",
             HTextAlign = "Left", IsReadOnly = true,
             Color = {0,0,0,0}, StrokeWidth = 0,
-            FontSize = 13, IsBold = true, FontColor = Colors.White,
+            FontSize = 13, IsBold = true,
             Position = {130, 215}, Size = {W - 145, 16}
         }
 
@@ -75,8 +73,7 @@ function GetControlLayout(props)
             Type = "GroupBox",
             StrokeWidth = 1,
             CornerRadius = 8,
-            Fill = Colors.Black,
-            StrokeColor = {0,0,0},
+            Fill = Colors.Background,
             Size = rackSize,
             Position = {0,0}
         })
@@ -84,11 +81,10 @@ function GetControlLayout(props)
         table.insert(graphics, {
             Type = "GroupBox",
             Text = "INPUTS",
-            Color = Colors.White,
+            Color = Colors.Header,
             HTextAlign = "CENTER",
             CornerRadius = 3,
-            Fill = Colors.Black,
-            StrokeColor = Colors.White,
+            Fill = Colors.Background,
             StrokeWidth = 1,
             Size = {250, rackSize[2] - 10},
             Position = inputPosition
@@ -97,11 +93,10 @@ function GetControlLayout(props)
         table.insert(graphics, {
             Type = "GroupBox",
             Text = "TEST",
-            Color = Colors.White,
+            Color = Colors.Header,
             HTextAlign = "CENTER",
             CornerRadius = 3,
-            Fill = Colors.Black,
-            StrokeColor = Colors.White,
+            Fill = Colors.Background,
             StrokeWidth = 1,
             Size = {250, rackSize[2] - 10},
             Position = testPosition
@@ -110,11 +105,10 @@ function GetControlLayout(props)
         table.insert(graphics, {
             Type = "GroupBox",
             Text = "PRESET",
-            Color = Colors.White,
+            Color = Colors.Header,
             HTextAlign = "CENTER",
             CornerRadius = 3,
-            Fill = Colors.Black,
-            StrokeColor = Colors.White,
+            Fill = Colors.Background,
             StrokeWidth = 1,
             Size = {160, rackSize[2] - 10},
             Position = presetPosition
@@ -127,7 +121,6 @@ function GetControlLayout(props)
             HTextAlign = "Center",
             IsBold = true,
             Size = {150,16},
-            Color = Colors.White,
             Position = {60, rackSize[2]*1/8}
         })
 
