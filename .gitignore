@@ -1,4 +1,2 @@
 .DS_Store
 plugin.lua
-debug.log
-.claude/settings.local.json

@@ -1,5 +1,4 @@
-if (Controls) then
-	local DebugTx, DebugRx, DebugFunction = false, false, false
+local DebugTx, DebugRx, DebugFunction = false, false, false
 	local DebugPrint = Properties["Debug Print"].Value
 
 	local function SetupDebugPrint()
@@ -22,10 +21,10 @@ if (Controls) then
 		PROHD   = {"SDI","DVI","HDMI","DP","VGA","CVBS","","","",""},
 		PROUHDJR= {"DP","HDMI","SDI1","SDI2","","","","","",""},
 		MCTRL4K = {"DVI","HDMI","DP","","","","","","",""},
-		TU      = {},
+		TU      = {"Android","HDMI1","HDMI2","HDMI3","","","","","",""}
 	}
 
-	local VX_MODELS = {VX4S=true,VX4S_N=true,VX6S=true,VX1000=true,PROHD=true,PROUHDJR=true,MCTRL4K=true}
+	local VX_MODELS = {VX4S=true,VX4S_N=true,VX6S=true,VX1000=true,PROHD=true,PROUHDJR=true,MCTRL4K=true,TU=true}
 	local TU_CONTROLS = {"INPUT_ANDROID","INPUT_HDMI1","INPUT_HDMI2","INPUT_HDMI3",
 	                      "SCREEN_ON","SCREEN_OFF","STANDBY","WAKE","VOLUME","MUTE"}
 	local VX_CONTROLS = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0",
@@ -42,8 +41,8 @@ if (Controls) then
 		-- Show/hide VX controls
 		for _, name in ipairs(VX_CONTROLS) do
 			if Controls[name] then
-				Controls[name].IsInvisible = isTU
-				Controls[name].IsDisabled  = isTU
+				Controls[name].IsInvisible = false --isTU
+				Controls[name].IsDisabled  = false --isTU
 			end
 		end
 
@@ -56,7 +55,7 @@ if (Controls) then
 		end
 
 		-- Update VX input button legends
-		if not isTU then
+		if true then --if not isTU then
 			local labels = InputLabels[model] or {}
 			local names  = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
 			for i, ctrlName in ipairs(names) do
@@ -166,6 +165,7 @@ if (Controls) then
 		PROHD   = buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x50,0x00,0x20,0x02},1,{0x00}),
 		PROUHDJR= buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x04,0x00,0x00,0x13},2,{0x03,0x00}),
 		MCTRL4K = buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x50,0x00,0x20,0x02},1,{0x00}),
+		TU      = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x02,0x00,0x00,0x00},0,nil),
 	}
 	local DisplayFreeze = {
 		VX4S    = buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x50,0x00,0x20,0x02},1,{0x01}),
@@ -184,6 +184,7 @@ if (Controls) then
 		PROHD   = buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x50,0x00,0x20,0x02},1,{0x02}),
 		PROUHDJR= buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x04,0x00,0x00,0x13},2,{0x05,0x00}),
 		MCTRL4K = buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x50,0x00,0x20,0x02},1,{0x02}),
+		TU      = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x01,0x00,0x00,0x00},0,nil),
 	}
 
 	local Inputs = {
@@ -229,10 +230,10 @@ if (Controls) then
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x02,0x00,0x00}), --DVI1
 			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --DVI2
 			-- TODO: verify register values for SDI1/OPT1/OPT2/MOSAIC against VX1000.Control.Protocol.V1.0.pdf
-			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --SDI1
-			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --OPT1
-			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --OPT1
-			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x03,0x00,0x00}), --MOSAIC
+			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x04,0x00,0x00}), --SDI1
+			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x05,0x00,0x00}), --OPT1
+			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x06,0x00,0x00}), --OPT2
+			buildPacket(0x00,VX_SRC,0x00,0x00,0x00,0x00,0x00,WRITE,{0x12,0x00,0x02,0x13},3,{0x07,0x00,0x00}), --MOSAIC
 			{},
 			{},
 		},
@@ -265,6 +266,18 @@ if (Controls) then
 			buildPacket(0x8A,VX_SRC,0xFF,0x00,0x00,0x00,0x00,WRITE,{0x23,0x00,0x00,0x02},1,{0x05}), --HDMI
 			buildPacket(0x9D,VX_SRC,0xFF,0x00,0x00,0x00,0x00,WRITE,{0x23,0x00,0x00,0x02},1,{0x5F}), --DP
 			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+		},
+		TU = {
+			buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x03}), --ANDROID
+			buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x01}), --HDMI1
+			buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x02}), --HDMI2
+			buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x04}), --HDMI3
 			{},
 			{},
 			{},
@@ -317,18 +330,22 @@ if (Controls) then
 		SystemStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x0D,0x00,0x00,0x00},1,nil),
 	}
 
-	local TuPollTimer = Timer.New()
-	TuPollTimer.EventHandler = function()
-		if Controls["Model"].String == "TU" and NovaStar.socket.IsConnected then
-			pendingRead = "CurrentSource"
-			sendPacket(TuRead.CurrentSource)
-		end
-	end
-
 	local TU_SOURCE_NAMES = {[0]="Android",[1]="HDMI1",[2]="HDMI2",[3]="HDMI3"}
 	local TU_STATUS_NAMES = {[0]="Standby",[1]="Normal display"}
 
 	local pendingRead = nil
+	local pollToken   = 0
+
+	local function startTUPolling(token)
+		Timer.CallAfter(function()
+			if token ~= pollToken then return end
+			if Controls["Model"].String == "TU" and NovaStar.socket.IsConnected then
+				pendingRead = "CurrentSource"
+				sendPacket(TuRead.CurrentSource)
+				startTUPolling(token)
+			end
+		end, 5)
+	end
 
 	local function rewireVXButtons(model)
 		if not VX_MODELS[model] then return end
@@ -337,7 +354,7 @@ if (Controls) then
 		for k, v in ipairs(inputList) do
 			local ctrlName = (k == 10) and "IN0" or ("IN" .. k)
 			if Controls[ctrlName] and v and #v > 0 then
-				Controls[ctrlName].EventHandler = function() sendPacket(v) end
+				Controls[ctrlName].EventHandler = function(c) if not c.Boolean then sendPacket(v) end end
 			end
 		end
 		-- Wire preset buttons for the current VX model
@@ -345,24 +362,24 @@ if (Controls) then
 		if presetTable then
 			for k, v in ipairs(presetTable) do
 				if Controls["PRESET" .. k] then
-					Controls["PRESET" .. k].EventHandler = function() sendPacket(v) end
+					Controls["PRESET" .. k].EventHandler = function(c) if not c.Boolean then sendPacket(v) end end
 				end
 			end
 		end
 		-- Wire display mode buttons
 		if Controls["Normal"] then
-			Controls["Normal"].EventHandler = function()
-				if DisplayNormal[model] then sendPacket(DisplayNormal[model]) end
+			Controls["Normal"].EventHandler = function(c)
+				if not c.Boolean and DisplayNormal[model] then sendPacket(DisplayNormal[model]) end
 			end
 		end
 		if Controls["Freeze"] then
-			Controls["Freeze"].EventHandler = function()
-				if DisplayFreeze[model] then sendPacket(DisplayFreeze[model]) end
+			Controls["Freeze"].EventHandler = function(c)
+				if not c.Boolean and DisplayFreeze[model] then sendPacket(DisplayFreeze[model]) end
 			end
 		end
 		if Controls["Black"] then
-			Controls["Black"].EventHandler = function()
-				if DisplayBlack[model] then sendPacket(DisplayBlack[model]) end
+			Controls["Black"].EventHandler = function(c)
+				if not c.Boolean and DisplayBlack[model] then sendPacket(DisplayBlack[model]) end
 			end
 		end
 	end
@@ -378,7 +395,8 @@ if (Controls) then
 		if Controls["Model"].String == "TU" then
 			pendingRead = "CurrentSource"
 			sendPacket(TuRead.CurrentSource)
-			TuPollTimer:Start(5)
+			pollToken = pollToken + 1
+			startTUPolling(pollToken)
 		else
 			sendPacket(ConnectPacket)
 		end
@@ -397,17 +415,41 @@ if (Controls) then
 
 		-- Parse TU read responses
 		if Controls["Model"].String == "TU" and #data >= 19 then
-			local b1, b2 = data:byte(1), data:byte(2)
-			if b1 == 0xAA and b2 == 0x55 then
+			local b1, b2, devType = data:byte(1), data:byte(2), data:byte(7)
+			if b1 == 0xAA and b2 == 0x55 and devType == 0x06 then
 				local dataByte = data:byte(19)
 				if dataByte then
 					if pendingRead == "CurrentSource" then
 						Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[dataByte] or ("Unknown("..dataByte..")")
+						if DebugFunction then print("CurrentSource["..tostring(dataByte).."]: "..Controls["CURRENT_SOURCE"].String) end
+            -- update IN1-IN9 buttons
+						local names  = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
+						for i, ctrlName in ipairs(names) do
+							if Controls[ctrlName] then
+                if DebugFunction and dataByte == (i-1) then print("["..ctrlName.."]: "..tostring(i-1)) end
+								Controls[ctrlName].Boolean = dataByte == (i-1) 
+							end
+						end
+						-- update TU SRC buttons
+						local labels = InputLabels[Controls["Model"].String] or {}
+						for i, ctrlLabel in ipairs(labels) do
+              local label = TU_CONTROLS[i]
+							if ctrlLabel~='' and Controls[label] then
+                if DebugFunction then print("["..label.."]: "..tostring(i-1)) end
+								Controls[label].Boolean = dataByte == (i-1)
+							end
+						end	
 						pendingRead = "SystemStatus"
 						sendPacket(TuRead.SystemStatus)
 					elseif pendingRead == "SystemStatus" then
 						Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
-						pendingRead = nil
+						-- update VX power buttons
+						Controls["Normal"].Boolean = dataByte==1
+						Controls["Black"].Boolean = dataByte==0
+						-- update TU power buttons
+						Controls["WAKE"].Boolean = dataByte==1
+						Controls["STANDBY"].Boolean = dataByte==0
+ 					pendingRead = nil
 					end
 				end
 			end
@@ -416,21 +458,23 @@ if (Controls) then
 
 	NovaStar.socket.Closed = function()
 		if DebugFunction then print("Closed() called") end
-		TuPollTimer:Stop()
+		pollToken = pollToken + 1
 		NovaStar.setStatus(2, "Connection closed")
 	end
 
-	NovaStar.socket.Error = function(sock, err)
+	NovaStar.socket.Error = function(_, err)
 		if DebugFunction then print("Error() called: " .. tostring(err)) end
 		print("TCP Socket Error: ")
 		print(err)
+		pollToken = pollToken + 1
 		NovaStar.setStatus(2,"Communication error with NovaStar")
 		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
 	end
 
-	NovaStar.socket.Timeout = function(sock)
+	NovaStar.socket.Timeout = function(_)
 		if DebugFunction then print("Timeout() called") end
 		print("TCP Socket Timeout" )
+		pollToken = pollToken + 1
 		NovaStar.setStatus(2,"Timeout in connection to NovaStar")
 		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
 	end
@@ -439,7 +483,7 @@ if (Controls) then
 		local model = Controls["Model"].String
 		if DebugFunction then print("Model changed to: " .. tostring(model)) end
 		applyModelLayout(model)
-		TuPollTimer:Stop()
+		pollToken = pollToken + 1
 		NovaStar.socket:Disconnect()
 		local ip = Controls["IPAddress"].String
 		if ip ~= "" then
@@ -460,14 +504,14 @@ if (Controls) then
 	end
 
 	-- TU series control event handlers
-	Controls["INPUT_HDMI1"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI1) end
-	Controls["INPUT_HDMI2"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI2) end
-	Controls["INPUT_HDMI3"].EventHandler   = function() sendPacket(TuCmds.SrcHDMI3) end
-	Controls["INPUT_ANDROID"].EventHandler = function() sendPacket(TuCmds.SrcAndroid) end
-	Controls["SCREEN_ON"].EventHandler     = function() sendPacket(TuCmds.ScreenOn) end
-	Controls["SCREEN_OFF"].EventHandler    = function() sendPacket(TuCmds.ScreenOff) end
-	Controls["STANDBY"].EventHandler       = function() sendPacket(TuCmds.Standby) end
-	Controls["WAKE"].EventHandler          = function() sendPacket(TuCmds.Wake) end
+	Controls["INPUT_HDMI1"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI1) end end
+	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI2) end end
+	Controls["INPUT_HDMI3"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI3) end end
+	Controls["INPUT_ANDROID"].EventHandler = function(c) if not c.Boolean then sendPacket(TuCmds.SrcAndroid) end end
+	Controls["STANDBY"].EventHandler       = function(c) if not c.Boolean then sendPacket(TuCmds.Standby) end end
+	Controls["WAKE"].EventHandler          = function(c) if not c.Boolean then sendPacket(TuCmds.Wake) end end
+	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then sendPacket(TuCmds.ScreenOn) end end
+	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPacket(TuCmds.ScreenOff) end end
 
 	Controls["MUTE"].EventHandler = function()
 		sendPacket(Controls["MUTE"].Boolean and TuCmds.Mute or TuCmds.Unmute)
@@ -491,6 +535,9 @@ if (Controls) then
 		sendBrightness(Controls['Brightness'].Value)
 	end
 
+	-- Ensure combo choices are always correct at runtime (may differ from cached design-time value)
+	Controls["Model"].Choices = {"VX4S","VX4S_N","VX6S","VX1000","PROHD","PROUHDJR","MCTRL4K","TU"}
+
 	-- Apply initial model layout (show/hide correct controls for initial model)
 	applyModelLayout(Controls["Model"].String)
 	rewireVXButtons(Controls["Model"].String)
@@ -511,5 +558,3 @@ if (Controls) then
 	end
 
 	SetupDebugPrint()
-
-end

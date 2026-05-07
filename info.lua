@@ -1,31 +1,25 @@
 -- info
 PluginInfo = {
-    Name = "NovaStar~Videowall controller",
-    Version = "1.0.0",
-  Id = "novastar-videowall-controller.1.0.0",
+    Name = "NovaStar~VX4S/VX6S/VX1000/ProHD/ProHDJr/MCTRL4K/TU",
+    Version = "0.3.0-dev",
+    Id = "novastar.plugin.0.3.0-dev",
     Description = "Plugin for controlling NovaStar video wall controllers",
     ShowDebug = true,
-    Author = "Rod Driscoll"
+    Author = "Joel Wetzell"
 }
 
 function GetPrettyName(props)
     return "NovaStar Controller"
 end
 
-DefaultColor = { 102, 102, 102 }
 Colors = {
-  Background  = {232,232,232},
-  Transparent = {255,255,255,0},
-  Text        = {24,24,24},
-  Header      = {0,0,0},
-  Button      = {48,32,40},
-  White       = {255, 255, 255},
-  Black       = {0, 0, 0},
-  Red         = {255, 0, 0},
-  Green       = {0, 255, 0},
-  Blue        = {0, 0, 255},
-  DarkGrey    = {0x56, 0x56, 0x56},
-  LCD         = {0x02, 0x33, 0xb2}
+    White    = {255, 255, 255},
+    Black    = {0, 0, 0},
+    Red      = {255, 0, 0},
+    Green    = {0, 255, 0},
+    Blue     = {0, 0, 255},
+    DarkGrey = {0x56, 0x56, 0x56},
+    LCD      = {0x02, 0x33, 0xb2}
 }
 
 function GetProperties()
