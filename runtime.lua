@@ -408,6 +408,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 
 	NovaStar.socket.Connected = function()
 		if DebugFunction then print("Connected() called") end
+		Controls["Connected"].Boolean = true
 		NovaStar.setStatus(0, "Connected - " .. Controls["IPAddress"].String)
 		if Controls["Model"].String == "TU" then
 			pendingRead = "CurrentSource"
@@ -476,6 +477,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	NovaStar.socket.Closed = function()
 		if DebugFunction then print("Closed() called") end
 		pollToken = pollToken + 1
+		Controls["Connected"].Boolean = false
 		NovaStar.setStatus(2, "Connection closed")
 	end
 
