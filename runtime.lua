@@ -135,6 +135,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	end
 
 	NovaStar.disconnect = function()
+		voluntaryDisconnect = true
 		NovaStar.socket:Disconnect()
 		Controls["Connected"].Boolean = false
 		NovaStar.setStatus(2, "Disconnected")
@@ -350,8 +351,9 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	local TU_SOURCE_NAMES = {[0]="Android",[1]="HDMI1",[2]="HDMI2",[3]="HDMI3"}
 	local TU_STATUS_NAMES = {[0]="Standby",[1]="Normal display"}
 
-	local pendingRead = nil
-	local pollToken   = 0
+	local pendingRead        = nil
+	local pollToken          = 0
+	local voluntaryDisconnect = false
 
 	local function startTUPolling(token)
 		Timer.CallAfter(function()
@@ -476,6 +478,10 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 
 	NovaStar.socket.Closed = function()
 		if DebugFunction then print("Closed() called") end
+		if voluntaryDisconnect then
+			voluntaryDisconnect = false
+			return
+		end
 		pollToken = pollToken + 1
 		Controls["Connected"].Boolean = false
 		NovaStar.setStatus(2, "Connection closed")
@@ -509,6 +515,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		if DebugFunction then print("Model changed to: " .. tostring(model)) end
 		applyModelLayout(model)
 		pollToken = pollToken + 1
+		voluntaryDisconnect = true
 		NovaStar.socket:Disconnect()
 		if Controls["ConnectBtn"].Boolean then
 			NovaStar.connect()
