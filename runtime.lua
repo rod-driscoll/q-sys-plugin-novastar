@@ -356,7 +356,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	local voluntaryDisconnect = false
 
 	local function startTUPolling(token)
-		if Controls.PollRate.Value == 0 then return end
+		if Controls["PollRate"].Value == 0 then return end
 		Timer.CallAfter(function()
 			if token ~= pollToken then return end
 			if Controls["PollRate"].Value == 0 then return end
@@ -555,6 +555,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		if not ctl.Boolean then return end
 		if Controls["Model"].String ~= "TU" then return end
 		if not NovaStar.socket.IsConnected then return end
+		if pendingRead ~= nil then return end
 		pendingRead = "CurrentSource"
 		sendPacket(TuRead.CurrentSource)
 	end
