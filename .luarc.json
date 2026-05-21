@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/lua-language-server/master/doc/.luarc.schema.json",
+  "diagnostics": {
+    "globals": [
+      "Controls",
+      "Properties",
+      "Timer",
+      "TcpSocket",
+      "UdpSocket",
+      "PageNames",
+      "Colors",
+      "graphics",
+      "controls",
+      "props"
+    ]
+  }
+}

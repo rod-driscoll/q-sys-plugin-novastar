@@ -1,4 +1,1 @@
--- components
-function GetComponents(props)
-    return {}
-end
+-- no internal components
