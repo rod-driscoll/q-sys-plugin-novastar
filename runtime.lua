@@ -520,9 +520,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		local ip = Controls["IPAddress"].String
 		if DebugFunction then print("IPAddress changed to: " .. tostring(ip)) end
 		NovaStar.socket:Disconnect()
-		if ip ~= "" then
-			local port = (Controls["Model"].String == "TU") and 5201 or 5200
-			NovaStar.socket:Connect(ip, port)
+		if Controls["ConnectBtn"].Boolean then
+			NovaStar.connect()
 		end
 	end
 
