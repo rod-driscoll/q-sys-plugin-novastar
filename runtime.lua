@@ -542,6 +542,15 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		end
 	end
 
+	Controls["PollRate"].EventHandler = function()
+		pollToken = pollToken + 1
+		if Controls["PollRate"].Value > 0
+				and Controls["Model"].String == "TU"
+				and NovaStar.socket.IsConnected then
+			startTUPolling(pollToken)
+		end
+	end
+
 	-- TU series control event handlers
 	Controls["INPUT_HDMI1"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI1) end end
 	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI2) end end
