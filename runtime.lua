@@ -519,6 +519,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		pollToken = pollToken + 1
 		voluntaryDisconnect = true
 		NovaStar.socket:Disconnect()
+		Controls["Connected"].Boolean = false
 		if Controls["ConnectBtn"].Boolean then
 			NovaStar.connect()
 		end

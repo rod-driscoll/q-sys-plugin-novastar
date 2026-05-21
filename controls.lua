@@ -3,7 +3,7 @@ table.insert(controls, {
   Name         = "code",
   ControlType  = "Text",
   Count        = 1,
-  UserPin      = true,
+  UserPin      = false,
   PinStyle     = "Input"
 })
 
