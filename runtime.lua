@@ -486,16 +486,22 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		print("TCP Socket Error: ")
 		print(err)
 		pollToken = pollToken + 1
-		NovaStar.setStatus(2,"Communication error with NovaStar")
-		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
+		Controls["Connected"].Boolean = false
+		NovaStar.setStatus(2, "Communication error with NovaStar")
+		if Controls["ConnectBtn"].Boolean then
+			NovaStar.connect()
+		end
 	end
 
 	NovaStar.socket.Timeout = function(_)
 		if DebugFunction then print("Timeout() called") end
-		print("TCP Socket Timeout" )
+		print("TCP Socket Timeout")
 		pollToken = pollToken + 1
-		NovaStar.setStatus(2,"Timeout in connection to NovaStar")
-		NovaStar.socket:Connect(Controls["IPAddress"].String, (Controls["Model"].String == "TU") and 5201 or 5200)
+		Controls["Connected"].Boolean = false
+		NovaStar.setStatus(2, "Timeout in connection to NovaStar")
+		if Controls["ConnectBtn"].Boolean then
+			NovaStar.connect()
+		end
 	end
 
 	Controls["Model"].EventHandler = function()
