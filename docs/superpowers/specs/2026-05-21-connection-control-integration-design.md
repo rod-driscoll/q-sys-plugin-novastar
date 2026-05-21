@@ -70,8 +70,8 @@ Event handler:
 **`controls.lua`:** Change `Min=1` to `Min=0`.
 
 **Event handler in `runtime.lua`:**
-- Increments `pollToken` to cancel any in-flight timer.
-- If `PollRate.Value > 0` and model is `TU` and socket is connected: increments `pollToken` again and calls `startTUPolling(pollToken)`.
+- Increments `pollToken` (cancels any in-flight timer).
+- If `PollRate.Value > 0` and model is `TU` and socket is connected: calls `startTUPolling(pollToken)` with the new token value.
 - If `PollRate.Value == 0`: does nothing further — polling stops.
 
 **Inside `startTUPolling` timer callback:** add guard at top:
