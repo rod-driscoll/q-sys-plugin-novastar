@@ -123,6 +123,23 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	NovaStar.socket.WriteTimeout = 0
 	NovaStar.socket.ReconnectTimeout = 0
 
+	NovaStar.connect = function()
+		local ip = Controls["IPAddress"].String
+		if ip == "" then
+			NovaStar.setStatus(3, "Please set IP address")
+			return
+		end
+		local port = (Controls["Model"].String == "TU") and 5201 or 5200
+		NovaStar.setStatus(5, "Connecting to NovaStar")
+		NovaStar.socket:Connect(ip, port)
+	end
+
+	NovaStar.disconnect = function()
+		NovaStar.socket:Disconnect()
+		Controls["Connected"].Boolean = false
+		NovaStar.setStatus(2, "Disconnected")
+	end
+
 	local function sendPacket(pkt)
 		if DebugTx then print("Tx: " .. hexDump(pkt)) end
 		if NovaStar.socket.IsConnected then
@@ -344,7 +361,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 				sendPacket(TuRead.CurrentSource)
 				startTUPolling(token)
 			end
-		end, 5)
+		end, Controls.PollRate.Value)
 	end
 
 	local function rewireVXButtons(model)
