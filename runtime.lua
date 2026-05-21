@@ -525,6 +525,14 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		end
 	end
 
+	Controls["ConnectBtn"].EventHandler = function(ctl)
+		if ctl.Boolean then
+			NovaStar.connect()
+		else
+			NovaStar.disconnect()
+		end
+	end
+
 	-- TU series control event handlers
 	Controls["INPUT_HDMI1"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI1) end end
 	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI2) end end
@@ -564,13 +572,11 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	applyModelLayout(Controls["Model"].String)
 	rewireVXButtons(Controls["Model"].String)
 
-	-- Connect if IP address is already set
-	if Controls["IPAddress"].String ~= "" then
-		NovaStar.setStatus(5, "Connecting to NovaStar")
-		local port = (Controls["Model"].String == "TU") and 5201 or 5200
-		NovaStar.socket:Connect(Controls["IPAddress"].String, port)
+	-- Connect on load if ConnectBtn is already set
+	if Controls["ConnectBtn"].Boolean then
+		NovaStar.connect()
 	else
-		NovaStar.setStatus(3, "Please set IP address")
+		NovaStar.setStatus(3, "Not connected")
 	end
 
 	-- Apply default brightness
