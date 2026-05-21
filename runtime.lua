@@ -510,10 +510,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		applyModelLayout(model)
 		pollToken = pollToken + 1
 		NovaStar.socket:Disconnect()
-		local ip = Controls["IPAddress"].String
-		if ip ~= "" then
-			local port = (model == "TU") and 5201 or 5200
-			NovaStar.socket:Connect(ip, port)
+		if Controls["ConnectBtn"].Boolean then
+			NovaStar.connect()
 		end
 		rewireVXButtons(model)
 	end
