@@ -69,7 +69,14 @@ elseif CurrentPage == "Control" then
   ((160 - (((PresetButton.Size[1] * 5) + (PresetButton.Padding * 4)))) / 2)
   ModeButton.xStart         =ModeButton.Padding * 6
 
-  local TestLabels          = { "Red", "Green", "Blue", "White", "Horiz", "Vert", "Diag", "Gray", "Aging" }
+  --local TestLabels          = { "Red", "Green", "Blue", "White", "Horiz", "Vert", "Diag", "Gray", "Aging" }
+  local TestLabels          = { "Black", 
+                              "Red",     "Green",   "Blue",    "White",
+                              "V Bars",  "H Bars",  "Chess",   "Diag",
+                              "gray",    "Aging",   "H Line",  "V Line",
+                              "B Slash", "F Slash", "Grid",    "Hatch",
+                              "R GradH", "G GradH", "B GradH", "W GradH",
+                              "R GradV", "G GradV", "B GradV", "W GradV" }
 
   --First row of input buttons
   controls['IN1']           = { Style="Button", ButtonType="Momentary", Legend=tostring(1), OffColor=Colors.White, Color=Colors.Red, Position={ SourceButton.xStart, SourceButton.yStart }, Size=SourceButton.Size }
@@ -79,11 +86,11 @@ elseif CurrentPage == "Control" then
   controls['IN5']           = { Style="Button", ButtonType="Momentary", Legend=tostring(5), OffColor=Colors.White, Color=Colors.Red, Position={ SourceButton.xStart + ((SourceButton.Size[1] + SourceButton.Padding) * 4), SourceButton.yStart }, Size=SourceButton.Size }
 
   --First row of test buttons
-  controls['TEST_RED']      = { Style="Button", ButtonType="Momentary", Legend=TestLabels[1] ~= nil and TestLabels[1] or "1", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart, TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_GREEN']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[2] ~= nil and TestLabels[2] or "2", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 1), TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_BLUE']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[3] ~= nil and TestLabels[3] or "3", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 2), TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_WHITE']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[4] ~= nil and TestLabels[4] or "4", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 3), TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_HORIZ']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[5] ~= nil and TestLabels[5] or "5", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 4), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_BLACK']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[1] ~= nil and TestLabels[1] or "1", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart, TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_RED']      = { Style="Button", ButtonType="Momentary", Legend=TestLabels[2] ~= nil and TestLabels[2] or "2", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 1), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_GREEN']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[3] ~= nil and TestLabels[3] or "3", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 2), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_BLUE']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[4] ~= nil and TestLabels[4] or "4", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 3), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_WHITE']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[5] ~= nil and TestLabels[5] or "5", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 4), TestButton.yStart }, Size=TestButton.Size }
 
   --First row of preset buttons
   controls['PRESET1']       = { Style="Button", ButtonType="Momentary", Legend="1", OffColor=Colors.White, Color=Colors.Red, Position={ PresetButton.xStart, PresetButton.yStart }, Size=PresetButton.Size }
@@ -105,10 +112,10 @@ elseif CurrentPage == "Control" then
   controls['IN0']           = { Style="Button", ButtonType="Momentary", Legend=tostring(0), OffColor=Colors.White, Color=Colors.Red, Position={ SourceButton.xStart + ((SourceButton.Size[1] + SourceButton.Padding) * 4), SourceButton.yStart }, Size=SourceButton.Size }
 
   --Second row of test buttons
-  controls['TEST_VERT']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[6] ~= nil and TestLabels[6] or "6", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart, TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_DIAG']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[7] ~= nil and TestLabels[7] or "7", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 1), TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_GRAY']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[8] ~= nil and TestLabels[8] or "8", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 2), TestButton.yStart }, Size=TestButton.Size }
-  controls['TEST_AGING']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[9] ~= nil and TestLabels[9] or "9", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 3), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_HORIZ']    = { Style="Button", ButtonType="Momentary", Legend=TestLabels[6] ~= nil and TestLabels[6] or "6", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart, TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_VERT']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[7] ~= nil and TestLabels[7] or "7", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 1), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_DIAG']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[8] ~= nil and TestLabels[8] or "8", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 2), TestButton.yStart }, Size=TestButton.Size }
+  controls['TEST_GRAY']     = { Style="Button", ButtonType="Momentary", Legend=TestLabels[9] ~= nil and TestLabels[9] or "9", OffColor=Colors.White, Color=Colors.Red, Position={ TestButton.xStart + ((TestButton.Size[1] + TestButton.Padding) * 3), TestButton.yStart }, Size=TestButton.Size }
   --Second row of preset buttons
   controls['PRESET6']       = { Style="Button", ButtonType="Momentary", Legend="6", OffColor=Colors.White, Color=Colors.Red, Position={ PresetButton.xStart, PresetButton.yStart }, Size=PresetButton.Size }
   controls['PRESET7']       = { Style="Button", ButtonType="Momentary", Legend="7", OffColor=Colors.White, Color=Colors.Red, Position={ PresetButton.xStart + ((PresetButton.Size[1] + PresetButton.Padding) * 1), PresetButton.yStart }, Size=PresetButton.Size }
@@ -141,4 +148,5 @@ elseif CurrentPage == "Control" then
   controls["Port"]          = { Style="Text", IsReadOnly=true, Position={ 0, tuY + 50 }, Size={ 1, 1 }, IsInvisible=true }
   controls["SYSTEM_STATUS"] = { Style="Text", IsReadOnly=true, Position={ 0, tuY + 50 }, Size={ 1, 1 }, IsInvisible=true }
   controls["CURRENT_SOURCE"]= { Style="Text", IsReadOnly=true, Position={ 0, tuY + 50 }, Size={ 1, 1 }, IsInvisible=true }
+
 end

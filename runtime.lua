@@ -26,7 +26,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 
 	local VX_MODELS = {VX4S=true,VX4S_N=true,VX6S=true,VX1000=true,PROHD=true,PROUHDJR=true,MCTRL4K=true,TU=true}
 	local TU_CONTROLS = {"INPUT_ANDROID","INPUT_HDMI1","INPUT_HDMI2","INPUT_HDMI3",
-	                      "SCREEN_ON","SCREEN_OFF","STANDBY","WAKE","VOLUME","MUTE"}
+	                      "SCREEN_ON","SCREEN_OFF","STANDBY","WAKE","VOLUME","MUTE",
+	                      "TEST_BLACK","TEST_VBARS","TEST_HBARS","TEST_CHESS"}
 	local VX_CONTROLS = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0",
 	                      "TEST_RED","TEST_GREEN","TEST_BLUE","TEST_WHITE","TEST_HORIZ",
 	                      "TEST_VERT","TEST_DIAG","TEST_GRAY","TEST_AGING",
@@ -160,11 +161,25 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	end
 
 	local TestPatterns = {
-		RED   = makeTestPattern(0x02), GREEN = makeTestPattern(0x03),
-		BLUE  = makeTestPattern(0x04), WHITE = makeTestPattern(0x05),
-		HORIZ = makeTestPattern(0x06), VERT  = makeTestPattern(0x07),
+		BLACK = makeTestPattern(0x00), RED   = makeTestPattern(0x01),
+		GREEN = makeTestPattern(0x02), BLUE  = makeTestPattern(0x03),
+		WHITE = makeTestPattern(0x04), VBARS  = makeTestPattern(0x05),
+		HBARS = makeTestPattern(0x06), CHESS = makeTestPattern(0x07),
 		DIAG  = makeTestPattern(0x08), GRAY  = makeTestPattern(0x09),
-		AGING = makeTestPattern(0x0A),
+		AGING = makeTestPattern(0x0A), HLINE = makeTestPattern(0x10),
+		VLINE = makeTestPattern(0x11), BSLASH= makeTestPattern(0x12),
+		FSLASH= makeTestPattern(0x13), GRID  = makeTestPattern(0x14),
+		HATCH = makeTestPattern(0x15), RGRADH= makeTestPattern(0x20),
+		GGRADH= makeTestPattern(0x21), BGRADH= makeTestPattern(0x22),
+		WGRADH= makeTestPattern(0x23), RGRADV= makeTestPattern(0x24),
+		GGRADV= makeTestPattern(0x25), BGRADV= makeTestPattern(0x26),
+		WGRADV= makeTestPattern(0x27)
+
+		-- RED   = makeTestPattern(0x02), GREEN = makeTestPattern(0x03),
+		-- BLUE  = makeTestPattern(0x04), WHITE = makeTestPattern(0x05),
+		-- HORIZ = makeTestPattern(0x06), VERT  = makeTestPattern(0x07),
+		-- DIAG  = makeTestPattern(0x08), GRAY  = makeTestPattern(0x09),
+		-- AGING = makeTestPattern(0x0A),
 	}
 
 	local ConnectPacket = buildPacket(0x00, VX_SRC, 0x00, 0x00, 0x00, 0x00, 0x00, READ,
@@ -582,9 +597,11 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	end
 
 	for k, v in pairs(TestPatterns) do
-		Controls['TEST_' .. k].EventHandler = function()
-			for _, pkt in ipairs(v) do
-				sendPacket(pkt)
+		if Controls['TEST_' .. k] then
+			Controls['TEST_' .. k].EventHandler = function()
+				for _, pkt in ipairs(v) do
+					sendPacket(pkt)
+				end
 			end
 		end
 	end

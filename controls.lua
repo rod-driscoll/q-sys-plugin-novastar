@@ -24,7 +24,14 @@ table.insert(controls, {
 })
 
 -- Test Patterns
-for _, n in ipairs({"TEST_RED","TEST_GREEN","TEST_BLUE","TEST_WHITE","TEST_HORIZ","TEST_VERT","TEST_DIAG","TEST_GRAY","TEST_AGING"}) do
+-- for _, n in ipairs({"TEST_RED","TEST_GREEN","TEST_BLUE","TEST_WHITE","TEST_HORIZ","TEST_VERT","TEST_DIAG","TEST_GRAY","TEST_AGING"}) do
+for _, n in ipairs({"TEST_BLACK",
+        "TEST_RED",     "TEST_GREEN",   "TEST_BLUE",    "TEST_WHITE",
+        "TEST_VBARS",   "TEST_HBARS",   "TEST_CHESS",   "TEST_DIAG",
+        "TEST_GRAY",    "TEST_AGING",   "TEST_HLINE",   "TEST_VLINE",
+        "TEST_BSLASH",  "TEST_FSLASH",  "TEST_GRID",    "TEST_HATCH",
+        "TEST_RGRADH",  "TEST_GGRADH",  "TEST_BGRADH",  "TEST_WGRADH",
+        "TEST_RGRADV",  "TEST_GGRADV",  "TEST_BGRADV",  "TEST_WGRADV"}) do
   table.insert(controls, {Name=n, ControlType="Button", ButtonType="Momentary"})
 end
 
