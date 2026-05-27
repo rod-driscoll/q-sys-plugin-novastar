@@ -691,8 +691,24 @@ if Controls then
   	local TU_STATUS_NAMES = {[0]="Standby",[1]="Normal display"}
   
   	local pendingRead        = nil
+  	local pendingTuSource    = nil
   	local pollToken          = 0
   	local voluntaryDisconnect = false
+  
+  	local function applyTuSourceFeedback(src)
+  		Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[src] or ("Unknown("..src..")")
+  		local names = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
+  		for i, ctrlName in ipairs(names) do
+  			if Controls[ctrlName] then Controls[ctrlName].Boolean = src == (i-1) end
+  		end
+  		local labels = InputLabels["TU"]
+  		for i, ctrlLabel in ipairs(labels) do
+  			local label = TU_CONTROLS[i]
+  			if ctrlLabel ~= '' and Controls[label] then
+  				Controls[label].Boolean = src == (i-1)
+  			end
+  		end
+  	end
   
   	local function startTUPolling(token)
   		if Controls["PollRate"].Value == 0 then return end
@@ -781,25 +797,8 @@ if Controls then
   				local dataByte = data:byte(19)
   				if dataByte then
   					if pendingRead == "CurrentSource" then
-  						Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[dataByte] or ("Unknown("..dataByte..")")
-  						if DebugFunction then print("CurrentSource["..tostring(dataByte).."]: "..Controls["CURRENT_SOURCE"].String) end
-              -- update IN1-IN9 buttons
-  						local names  = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
-  						for i, ctrlName in ipairs(names) do
-  							if Controls[ctrlName] then
-                  if DebugFunction and dataByte == (i-1) then print("["..ctrlName.."]: "..tostring(i-1)) end
-  								Controls[ctrlName].Boolean = dataByte == (i-1) 
-  							end
-  						end
-  						-- update TU SRC buttons
-  						local labels = InputLabels[Controls["Model"].String] or {}
-  						for i, ctrlLabel in ipairs(labels) do
-                local label = TU_CONTROLS[i]
-  							if ctrlLabel~='' and Controls[label] then
-                  if DebugFunction then print("["..label.."]: "..tostring(i-1)) end
-  								Controls[label].Boolean = dataByte == (i-1)
-  							end
-  						end	
+  						if DebugFunction then print("CurrentSource["..tostring(dataByte).."]: "..(TU_SOURCE_NAMES[dataByte] or "Unknown")) end
+  						applyTuSourceFeedback(dataByte)
   						pendingRead = "SystemStatus"
   						sendPacket(TuRead.SystemStatus)
   					elseif pendingRead == "SystemStatus" then
@@ -812,6 +811,25 @@ if Controls then
   						Controls["STANDBY"].Boolean = dataByte==0
    					pendingRead = nil
   					end
+  				end
+  			elseif b1 == 0xAA and b2 == 0x55 and devType == 0x08 and data:byte(11) == WRITE then
+  				-- write-ack echo: byte(13) holds the command byte
+  				local cmdByte = data:byte(13)
+  				if cmdByte == 0x04 then      -- Source switch ack
+  					if pendingTuSource ~= nil then
+  						applyTuSourceFeedback(pendingTuSource)
+  						pendingTuSource = nil
+  					end
+  				elseif cmdByte == 0x02 then  -- Wake / Normal ack
+  					Controls["WAKE"].Boolean    = true
+  					Controls["STANDBY"].Boolean = false
+  					Controls["Normal"].Boolean  = true
+  					Controls["Black"].Boolean   = false
+  				elseif cmdByte == 0x01 then  -- Standby / Black ack
+  					Controls["WAKE"].Boolean    = false
+  					Controls["STANDBY"].Boolean = true
+  					Controls["Normal"].Boolean  = false
+  					Controls["Black"].Boolean   = true
   				end
   			end
   		end
@@ -901,13 +919,13 @@ if Controls then
   	end
   
   	-- TU series control event handlers
-  	Controls["INPUT_HDMI1"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI1) end end
-  	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI2) end end
-  	Controls["INPUT_HDMI3"].EventHandler   = function(c) if not c.Boolean then sendPacket(TuCmds.SrcHDMI3) end end
-  	Controls["INPUT_ANDROID"].EventHandler = function(c) if not c.Boolean then sendPacket(TuCmds.SrcAndroid) end end
+  	Controls["INPUT_HDMI1"].EventHandler   = function(c) if not c.Boolean then pendingTuSource = 1 sendPacket(TuCmds.SrcHDMI1) end end
+  	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then pendingTuSource = 2 sendPacket(TuCmds.SrcHDMI2) end end
+  	Controls["INPUT_HDMI3"].EventHandler   = function(c) if not c.Boolean then pendingTuSource = 3 sendPacket(TuCmds.SrcHDMI3) end end
+  	Controls["INPUT_ANDROID"].EventHandler = function(c) if not c.Boolean then pendingTuSource = 0 sendPacket(TuCmds.SrcAndroid) end end
   	Controls["STANDBY"].EventHandler       = function(c) if not c.Boolean then sendPacket(TuCmds.Standby) end end
   	Controls["WAKE"].EventHandler          = function(c) if not c.Boolean then sendPacket(TuCmds.Wake) end end
-  	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then sendPacket(TuCmds.ScreenOn) end end
+  	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then print('sending screen on') sendPacket(TuCmds.ScreenOn) end end
   	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPacket(TuCmds.ScreenOff) end end
   
   	Controls["MUTE"].EventHandler = function()
