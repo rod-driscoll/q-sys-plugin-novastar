@@ -481,6 +481,11 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		else
 			sendPacket(ConnectPacket)
 		end
+		if pendingPowerCmd then
+			local pkt = pendingPowerCmd
+			pendingPowerCmd = nil
+			sendPowerCmd(pkt)
+		end
 	end
 
 	NovaStar.socket.Reconnect = function()
