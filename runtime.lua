@@ -642,10 +642,10 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	Controls["INPUT_HDMI2"].EventHandler   = function(c) if not c.Boolean then pendingTuSource = 2 sendPacket(TuCmds.SrcHDMI2) end end
 	Controls["INPUT_HDMI3"].EventHandler   = function(c) if not c.Boolean then pendingTuSource = 3 sendPacket(TuCmds.SrcHDMI3) end end
 	Controls["INPUT_ANDROID"].EventHandler = function(c) if not c.Boolean then pendingTuSource = 0 sendPacket(TuCmds.SrcAndroid) end end
-	Controls["STANDBY"].EventHandler       = function(c) if not c.Boolean then sendPacket(TuCmds.Standby) end end
-	Controls["WAKE"].EventHandler          = function(c) if not c.Boolean then sendPacket(TuCmds.Wake) end end
-	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then sendPacket(TuCmds.PowerOn) end end
-	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPacket(TuCmds.PowerOff) end end
+	Controls["STANDBY"].EventHandler       = function(c) if not c.Boolean then sendPowerCmd(TuCmds.Standby) end end
+	Controls["WAKE"].EventHandler          = function(c) if not c.Boolean then sendPowerCmd(TuCmds.Wake) end end
+	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then sendPowerCmd(TuCmds.PowerOn) end end
+	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPowerCmd(TuCmds.PowerOff) end end
 
 	Controls["MUTE"].EventHandler = function()
 		sendPacket(Controls["MUTE"].Boolean and TuCmds.Mute or TuCmds.Unmute)
