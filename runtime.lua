@@ -136,6 +136,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	end
 
 	NovaStar.disconnect = function()
+		pendingPowerCmd = nil
 		voluntaryDisconnect = true
 		NovaStar.socket:Disconnect()
 		Controls["Connected"].Boolean = false
@@ -388,6 +389,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 			local timeout = Controls["PollRate"].Value > 0 and Controls["PollRate"].Value or 30
 			Timer.CallAfter(function()
 				if powerCmdToken ~= token then return end
+				pollToken = pollToken + 1
 				voluntaryDisconnect = true
 				NovaStar.socket:Disconnect()
 				Controls["Connected"].Boolean = false
