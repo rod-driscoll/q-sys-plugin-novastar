@@ -449,17 +449,17 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 		-- Wire display mode buttons
 		if Controls["Normal"] then
 			Controls["Normal"].EventHandler = function(c)
-				if not c.Boolean and DisplayNormal[model] then sendPacket(DisplayNormal[model]) end
+				if not c.Boolean and DisplayNormal[model] then sendPowerCmd(DisplayNormal[model]) end
 			end
 		end
 		if Controls["Freeze"] then
 			Controls["Freeze"].EventHandler = function(c)
-				if not c.Boolean and DisplayFreeze[model] then sendPacket(DisplayFreeze[model]) end
+				if not c.Boolean and DisplayFreeze[model] then sendPowerCmd(DisplayFreeze[model]) end
 			end
 		end
 		if Controls["Black"] then
 			Controls["Black"].EventHandler = function(c)
-				if not c.Boolean and DisplayBlack[model] then sendPacket(DisplayBlack[model]) end
+				if not c.Boolean and DisplayBlack[model] then sendPowerCmd(DisplayBlack[model]) end
 			end
 		end
 	end
