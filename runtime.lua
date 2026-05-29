@@ -376,6 +376,29 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	local pendingPowerCmd    = nil
 	local powerCmdToken      = 0
 
+	local function sendPowerCmd(pkt)
+		if not NovaStar.socket.IsConnected then
+			pendingPowerCmd = pkt
+			NovaStar.connect()
+			return
+		end
+		sendPacket(pkt)
+		if Controls["Model"].String == "TU" then
+			local token = powerCmdToken
+			local timeout = Controls["PollRate"].Value > 0 and Controls["PollRate"].Value or 30
+			Timer.CallAfter(function()
+				if powerCmdToken ~= token then return end
+				voluntaryDisconnect = true
+				NovaStar.socket:Disconnect()
+				Controls["Connected"].Boolean = false
+				NovaStar.setStatus(2, "No response to power command - reconnecting")
+				if Controls["ConnectBtn"].Boolean then
+					NovaStar.connect()
+				end
+			end, timeout)
+		end
+	end
+
 	local function applyTuSourceFeedback(src)
 		Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[src] or ("Unknown("..src..")")
 		local names = {"IN1","IN2","IN3","IN4","IN5","IN6","IN7","IN8","IN9","IN0"}
