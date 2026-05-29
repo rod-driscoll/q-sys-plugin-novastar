@@ -348,8 +348,10 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	local TuCmds = {
 		Standby    = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x01,0x00,0x00,0x00},0,nil),
 		Wake       = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x02,0x00,0x00,0x00},0,nil),
-		ScreenOn   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x01}),
-		ScreenOff  = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x00}),
+		PowerOn    = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x03,0x00,0x00,0x00},1,{0x01}),
+		PowerOff   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x03,0x00,0x00,0x00},1,{0x00}),
+		ScreenOn   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x01}), -- doesn't work
+		ScreenOff  = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x0D,0x00,0x00,0x00},1,{0x00}), -- doesn't work
 		SrcHDMI1   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x01}),
 		SrcHDMI2   = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x02}),
 		SrcAndroid = buildPacket(0x01,TU_SRC,0x00,0x08,0x00,0xFF,0xFF,WRITE,{0x04,0x00,0x00,0x00},1,{0x03}),
@@ -360,7 +362,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	-- TU read commands (Android Card Monitoring, DevType=0x06)
 	local TuRead = {
 		CurrentSource = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x04,0x00,0x00,0x00},1,nil),
-		SystemStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x0D,0x00,0x00,0x00},1,nil),
+		PowerStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x03,0x00,0x00,0x00},1,nil),
+		SystemStatus  = buildPacket(0x01,TU_SRC,0x00,0x06,0x00,0xFF,0xFF,READ,{0x0D,0x00,0x00,0x00},1,nil), -- doesn't work
 	}
 
 	local TU_SOURCE_NAMES = {[0]="Android",[1]="HDMI1",[2]="HDMI2",[3]="HDMI3"}
@@ -370,6 +373,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	local pendingTuSource    = nil
 	local pollToken          = 0
 	local voluntaryDisconnect = false
+	local pendingPowerCmd    = nil
+	local powerCmdToken      = 0
 
 	local function applyTuSourceFeedback(src)
 		Controls["CURRENT_SOURCE"].String = TU_SOURCE_NAMES[src] or ("Unknown("..src..")")
@@ -475,8 +480,17 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 					if pendingRead == "CurrentSource" then
 						if DebugFunction then print("CurrentSource["..tostring(dataByte).."]: "..(TU_SOURCE_NAMES[dataByte] or "Unknown")) end
 						applyTuSourceFeedback(dataByte)
-						pendingRead = "SystemStatus"
-						sendPacket(TuRead.SystemStatus)
+						-- SystemStatus doesn't work on TU series, not tested elsewhere
+						-- pendingRead = "SystemStatus"
+						-- sendPacket(TuRead.SystemStatus) 
+						pendingRead = "PowerStatus"
+						sendPacket(TuRead.PowerStatus)
+					elseif pendingRead == "PowerStatus" then
+						Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
+						-- update TU power buttons
+						Controls["SCREEN_ON"].Boolean  = dataByte==1
+						Controls["SCREEN_OFF"].Boolean = dataByte==0
+ 						pendingRead = nil
 					elseif pendingRead == "SystemStatus" then
 						Controls["SYSTEM_STATUS"].String = TU_STATUS_NAMES[dataByte] or ("Unknown("..dataByte..")")
 						-- update VX power buttons
@@ -485,7 +499,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 						-- update TU power buttons
 						Controls["WAKE"].Boolean = dataByte==1
 						Controls["STANDBY"].Boolean = dataByte==0
- 					pendingRead = nil
+ 						pendingRead = nil
 					end
 				end
 			elseif b1 == 0xAA and b2 == 0x55 and devType == 0x08 and data:byte(11) == WRITE then
@@ -601,8 +615,8 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	Controls["INPUT_ANDROID"].EventHandler = function(c) if not c.Boolean then pendingTuSource = 0 sendPacket(TuCmds.SrcAndroid) end end
 	Controls["STANDBY"].EventHandler       = function(c) if not c.Boolean then sendPacket(TuCmds.Standby) end end
 	Controls["WAKE"].EventHandler          = function(c) if not c.Boolean then sendPacket(TuCmds.Wake) end end
-	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then print('sending screen on') sendPacket(TuCmds.ScreenOn) end end
-	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPacket(TuCmds.ScreenOff) end end
+	Controls["SCREEN_ON"].EventHandler     = function(c) if not c.Boolean then sendPacket(TuCmds.PowerOn) end end
+	Controls["SCREEN_OFF"].EventHandler    = function(c) if not c.Boolean then sendPacket(TuCmds.PowerOff) end end
 
 	Controls["MUTE"].EventHandler = function()
 		sendPacket(Controls["MUTE"].Boolean and TuCmds.Mute or TuCmds.Unmute)
