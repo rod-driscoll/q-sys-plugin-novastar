@@ -495,6 +495,7 @@ local DebugTx, DebugRx, DebugFunction = false, false, false
 	end
 
 	NovaStar.socket.Data = function()
+		powerCmdToken = powerCmdToken + 1
 		local data = NovaStar.socket:Read(NovaStar.socket.BufferLength)
 		if DebugRx then print("Rx (" .. #data .. "b): " .. hexDump({data:byte(1, #data)})) end
 		NovaStar.setStatus(0, "Connected - " .. Controls["IPAddress"].String)
